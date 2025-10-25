@@ -5,10 +5,14 @@ import { join, dirname } from 'node:path';
 const spawnChildProcess = async (args) => {
   const scriptPath = join(dirname(fileURLToPath(import.meta.url)), 'files', 'script.js');
   
-  // let's spawn the child process with the script
+  // spawn child with dedicated pipes so we can proxy stdio manually
   const child = spawn('node', [scriptPath, ...args], {
-    stdio: ['inherit', 'inherit', 'inherit', 'ipc']
+    stdio: ['pipe', 'pipe', 'inherit', 'ipc'],
   });
+  
+  if (!child.stdin || !child.stdout) {
+    throw new Error('Unable to establish stdio pipes');
+  }
   
   // forward stdin to child process
   process.stdin.pipe(child.stdin);

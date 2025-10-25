@@ -2,16 +2,14 @@ import path from 'node:path';
 import { release, version } from 'node:os';
 import { createServer as createServerHttp } from 'node:http';
 import { fileURLToPath } from 'node:url';
-
-// Import the c.cjs file (we'll need to handle this differently in ESM)
-import('./files/c.cjs');
+import './files/c.cjs';
+import aJson from './files/a.json' with { type: 'json' };
+import bJson from './files/b.json' with { type: 'json' };
 
 const random = Math.random();
 
-// In ESM, we need to use dynamic imports for JSON files
-const unknownObject = random > 0.5 
-  ? await import('./files/a.json', { assert: { type: 'json' } })
-  : await import('./files/b.json', { assert: { type: 'json' } });
+// pick JSON object at runtime similar to CommonJS require
+const unknownObject = random > 0.5 ? aJson : bJson;
 
 console.log(`Release ${release()}`);
 console.log(`Version ${version()}`);
@@ -30,7 +28,7 @@ const myServer = createServerHttp((_, res) => {
 
 const PORT = 3000;
 
-console.log(unknownObject.default);
+console.log(unknownObject);
 
 myServer.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
